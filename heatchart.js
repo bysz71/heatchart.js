@@ -5,9 +5,9 @@ a canvas, so canvas does not need to be defined in html file
 before using. Simply new it, specify the dom you want to append
 the heat map to and provide other required arguments.
 usage:
-new HeatChart(parent, dotArray, canvasWidth, canvasHeight, gradientMode);
+new HeatChart(targetElement, dotArray, canvasWidth, canvasHeight, gradientMode);
 arguments:
-    parent: the dom you want to append this HeatChart into;
+    targetElement: the dom you want to append this HeatChart into;
     dotArray: data to generate HeatChart, is an array of {x:x,y:y}, can be scaled 
               in percentage or in pixel, needs to be specified by 'scalemode'.
     scaleMode: 0 for percentage scale mode, other for pixel scale mode
@@ -15,16 +15,21 @@ arguments:
     canvasHeight: pre-defined canvas height;
     gradientMode: color mapping mode, currently choose from 0 - 5;
     transparency: canvas transparency so you can lay it on a picture;
+    displayMode: 0 for heat map, 1 for gray scale map, 2 for dots
 ------------------------------------------*/
 var HeatChart = (function() {
     //constructor
-    function HeatChart(parent , dotArray , scaleMode , canvasWidth , canvasHeight , gradientMode , gradientRadius , transparency , displayMode){
+    function HeatChart(targetElement , dotArray , configuration){
         this.dotArray = dotArray;
-        this.gradientMode = gradientMode;
-        this.gradientRadius = (gradientRadius == 0? 32 : gradientRadius);
-        this.transparency = transparency;
-        this.scaleMode = scaleMode;
-        this.displayMode = displayMode;
+
+        this.scaleMode = (configuration.scaleMode == undefined ? 0 : configuration.scaleMode);
+        this.canvasWidth = ((configuration.canvasWidth == undefined || configuration.canvasWidth == 0) ? targetElement.offsetWidth : configuration.canvasWidth);
+        this.canvasHeight = ((configuration.canvasHeight == undefined || configuration.canvasHeight == 0) ? targetElement.offsetHeight : configuration.canvasHeight);
+        this.gradientMode = (configuration.gradientMode == undefined ? 0 : configuration.gradientMode);
+        this.gradientRadius = ((configuration.gradientRadius == undefined || configuration.gradientRadius == 0) ? 32 : configuration.gradientRadius);
+        console.debug(this.gradientRadius);
+        this.transparency = ((configuration.transparency == undefined || configuration.transparency == 0) ? 0.5 : configuration.transparency);
+        this.displayMode = (configuration.displayMode == undefined ? 0 : configuration.displayMode);
         
         //decide grayScaleAlpha based on number of dots
         //grayScaleAlpha is the start color of one gradient gray scale dot
@@ -32,20 +37,17 @@ var HeatChart = (function() {
         else if(this.dotArray.length >= 2000) this.grayScaleAlpha = 0.048;
         else this.grayScaleAlpha = 0.208 - this.dotArray.length * 0.00008;
         
-        //set canvas sizes by given data, if sizes are not given, fit parent dom
-        this.canvasWidth = (canvasWidth == 0 ? parent.offsetWidth : canvasWidth);
-        this.canvasHeight = (canvasHeight == 0 ? parent.offsetHeight : canvasHeight);
-        
-        //generate a canvas in parent dom to display HeatChart
+        //generate a canvas in targetElement dom to display HeatChart
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = this.canvasWidth;
         this.canvas.height = this.canvasHeight;
         this.canvas.style.position = 'absolute';
-        parent.appendChild(this.canvas);
+        targetElement.appendChild(this.canvas);
         
         //supported color gradient mode for color mapping
         this.gradientRainbow = { 
+            0:      'rgba(0,0,0,0.0)',
             0.14:   'rgba(139,0,255,' + this.transparency + ')',
             0.28:   'rgba(0,0,255,' + this.transparency + ')',
             0.42:   'rgba(0,127,255,' + this.transparency + ')',
@@ -156,7 +158,7 @@ var HeatChart = (function() {
         }
     }
     
-    //draw a transparent radial gradient circle
+    //draw a transtargetElement radial gradient circle
     HeatChart.prototype.drawOneCircle = function(dot){
         var gradient = this.ctx.createRadialGradient(dot.x , dot.y , 1 , dot.x , dot.y , this.gradientRadius);
         this.ctx.beginPath();
