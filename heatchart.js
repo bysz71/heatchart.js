@@ -27,7 +27,6 @@ var HeatChart = (function() {
         this.canvasHeight = ((configuration.canvasHeight == undefined || configuration.canvasHeight == 0) ? targetElement.offsetHeight : configuration.canvasHeight);
         this.gradientMode = (configuration.gradientMode == undefined ? 0 : configuration.gradientMode);
         this.gradientRadius = ((configuration.gradientRadius == undefined || configuration.gradientRadius == 0) ? 32 : configuration.gradientRadius);
-        console.debug(this.gradientRadius);
         this.transparency = ((configuration.transparency == undefined || configuration.transparency == 0) ? 0.5 : configuration.transparency);
         this.displayMode = (configuration.displayMode == undefined ? 0 : configuration.displayMode);
         
@@ -47,7 +46,7 @@ var HeatChart = (function() {
         
         //supported color gradient mode for color mapping
         this.gradientRainbow = { 
-            0:      'rgba(0,0,0,0.0)',
+            // 0:      'rgba(0,0,0,0.0)',
             0.14:   'rgba(139,0,255,' + this.transparency + ')',
             0.28:   'rgba(0,0,255,' + this.transparency + ')',
             0.42:   'rgba(0,127,255,' + this.transparency + ')',
@@ -198,18 +197,23 @@ var HeatChart = (function() {
         }
         
         var colorSpectrum = this.createColorSpectrum();
+        var alpha , colorR , colorG, colorB , colorA;
         for(var i = 0 ; i < imageDataObject.data.length ; i += 4){
-            var alpha = imageDataObject.data[i + 3];
-            var colorR = colorSpectrum[alpha * 4];
-            var colorG = colorSpectrum[alpha * 4 + 1];
-            var colorB = colorSpectrum[alpha * 4 + 2];
-            var colorA = colorSpectrum[alpha * 4 + 3];
+            alpha = imageDataObject.data[i + 3];
+            colorR = colorSpectrum[alpha * 4];
+            colorG = colorSpectrum[alpha * 4 + 1];
+            colorB = colorSpectrum[alpha * 4 + 2];
+            colorA = colorSpectrum[alpha * 4 + 3];
             imageDataObject.data[i] = colorR;
             imageDataObject.data[i + 1] = colorG;
             imageDataObject.data[i + 2] = colorB;
             imageDataObject.data[i + 3] = colorA;
         }
         this.ctx.putImageData(imageDataObject, 0 , 0);
+    }
+    
+    HeatChart.prototype.wipeCanvas = function(){
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
     
     return HeatChart;
