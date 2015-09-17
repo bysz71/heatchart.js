@@ -6,6 +6,9 @@ before using. Simply new it, specify the html element you want to append
 the heat map to and provide other required arguments.
 usage:
 new HeatChart(targetElement, dotArray, configuration);
+One line implementation:
+new HeatChart(targetElement, dotArray, 0);
+Advanced implementation:
 arguments:
     targetElement: the dom you want to append this HeatChart into;
     dotArray: data to generate HeatChart, is an array of {x:x,y:y}, can be scaled 
